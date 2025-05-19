@@ -10,9 +10,6 @@ Folder items overview:
 			PS there is a "debug.txt", it has functions list to enable and send stuff through uart, like arduino serial monitor... but FTDI is needed
 ->	Code + RTOS files: MAIN SOURCE CODE FOR THE WORK. contains necessary libraries, and code files
 
-->	CEP report.zip: Latex source file for CEP report
-
 ->	PROBLEMS.docx: the problems that occured in working, and what we tried
-
 
 	
