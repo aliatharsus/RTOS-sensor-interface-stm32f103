@@ -1,0 +1,197 @@
+#include <stm32f1xx.h>
+void spi1_init(void);
+uint8_t spi1_transfer(uint8_t d);
+void uartEnable(void);
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+void Error_Handler(void);
+
+
+char POWER_CTL=0x2D;
+char DATA_FORMAT=0x31;
+char DATAX0=0x32;
+char DATAX1=0x33;
+char DATAY0=0x34;
+char DATAY1=0x35;
+char DATAZ0=0x36;
+char DATAZ1=0x37;
+unsigned char values[10];
+int x,y,z;
+
+int main()
+{
+	SystemClock_Config();
+
+  MX_GPIO_Init();
+	spi1_init();
+	uartEnable();
+	RCC->AHBENR |=1;
+	DMA1_Channel2->CMAR = (uint32_t)values;
+	DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+	DMA1_Channel2->CNDTR = 6;
+	DMA1_Channel2->CCR = 0xA1;
+	SPI1->CR2 |= 1;
+	SPI1->DR = DATA_FORMAT;
+	SPI1->DR = 0X01;
+	SPI1->DR = POWER_CTL;
+	SPI1->DR = 0x08;
+	char temp = DATAX0;
+	temp |= (0x80 | 0x40);
+	
+	SPI1->DR = temp;
+	SPI1->DR = 00;
+	SPI1->DR = 00;
+	SPI1->DR = 00;
+	SPI1->DR = 00;
+	SPI1->DR = 00;
+	SPI1->DR = 00;
+	
+	USART1->DR = 'A';
+	HAL_Delay(100);
+	USART1->DR = 'b';
+	HAL_Delay(100);
+	USART1->DR = 'c';
+	HAL_Delay(100);
+	USART1->DR = 'D';
+	HAL_Delay(100);
+	
+	
+	
+	
+	RCC->APB2ENR |= 0xFC; /* enable clocks for GPIO */
+	//spi1_init(); /* initialize the SPI module */
+	/*--- make the SS pin of the slave low if needed ---*/
+
+	while(1)
+	{
+		
+	}
+}
+/* The function initializes the SPI module */
+void spi1_init()
+{
+RCC->APB2ENR |= 0xFC|(1<<12)|1; 
+GPIOA->CRL = 0xB4B44444;
+SPI1->CR1 = 0x35F;
+
+}
+
+
+uint8_t spi1_transfer(uint8_t d)
+{
+SPI1->DR = d; /* send the contents of d */
+while((SPI1->SR&(1<<0)) == 0); /* wait until RXNE is set */
+return SPI1->DR; /* return the received data */
+}
+
+
+void uartEnable(void)
+{
+	RCC->APB2ENR |= 0x4005;
+	GPIOA->CRH &= 0xFFFFFF0F;
+	GPIOA->CRH |= 0x000000B0;
+	USART1->BRR = (625<<0);
+	USART1->CR1 = 0x200C;
+}
+
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
+                          |GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA2 PA3 PA4 PA5
+                           PA6 PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
+                          |GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+}
+
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+#ifdef  USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
+

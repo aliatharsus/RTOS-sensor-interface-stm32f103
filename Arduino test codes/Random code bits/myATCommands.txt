@@ -1,0 +1,14 @@
+AT     						//same
+AT+RST						//same
+AT+CWMODE=1					//same
+AT+CWJAP="hollowpurple","password"
+
+AT+CIPMUX=0
+
+
+
+
+AT+CIPSTART="TCP","api.thingspeak.com",80	//same
+AT+CIPSEND=68
+GET /update?api_key=S2ZTFO02F96L7G9J&field1=30&field2=40&field3=50&field4=56
+AT+CIPCLOSE=0

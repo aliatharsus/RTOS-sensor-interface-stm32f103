@@ -1,0 +1,7 @@
+Obviously, current isnt calibrated..The rest of the readings are pretty accurate..
+
+you can actually see the trends, when the motor was off and then turned on.. 
+
+abnormalties arent shown because... well they didnt occur with this motor... 
+
+but it does work.. and will show any anomalies w the readings :)

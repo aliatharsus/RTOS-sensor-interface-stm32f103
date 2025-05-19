@@ -1,0 +1,18 @@
+Folder items overview:
+
+->	Arduino Test Codes: Upload to arduino and check the working of your adxl345, and esp-01
+
+->	Reference Datasheets: Not un-necessary stuff. Basic register map of adxl and AT Command list for esp.. PS goated baremetal coding book for stm32f1xx
+
+->	Implementation: Working Circuit pics, along with block diagram and un-calibrated result waveforms
+
+->	Arduino Test Codes > Random code bits: If you need to get to the baremetal working of the code. 
+			PS there is a "debug.txt", it has functions list to enable and send stuff through uart, like arduino serial monitor... but FTDI is needed
+->	Code + RTOS files: MAIN SOURCE CODE FOR THE WORK. contains necessary libraries, and code files
+
+->	CEP report.zip: Latex source file for CEP report
+
+->	PROBLEMS.docx: the problems that occured in working, and what we tried
+
+
+	
